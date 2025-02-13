@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import {
   ColorSchemeScript,
-  MantineProvider,
   mantineHtmlProps,
+  MantineProvider,
 } from "@mantine/core";
 import { ReactNode } from "react";
+import { Notifications } from "@mantine/notifications";
 
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -26,7 +27,10 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider>
+          {children}
+          <Notifications />
+        </MantineProvider>
       </body>
     </html>
   );
