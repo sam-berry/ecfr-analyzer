@@ -5,7 +5,6 @@
     "allowJs": true,
     "skipLibCheck": true,
     "noImplicitAny": false,
-    "noExplicitAny": false,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
