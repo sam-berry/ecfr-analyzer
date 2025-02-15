@@ -1,18 +1,20 @@
 package config
 
 import (
-	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
 	"os"
+	"strings"
 )
 
-var TokenSecret = []byte(os.Getenv("ECFR_TOKEN_SECRET"))
+var AuthToken = os.Getenv("ECFR_ADMIN_TOKEN")
 
-var TokenHandler = jwtware.New(
-	jwtware.Config{
-		SigningKey: jwtware.SigningKey{Key: TokenSecret},
-		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return ctx.SendStatus(fiber.StatusUnauthorized)
-		},
-	},
-)
+var AdminAuthHandler = func(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+
+	token := strings.Split(authHeader, "Bearer ")
+	if len(token) != 2 || token[1] != AuthToken {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	return c.Next()
+}

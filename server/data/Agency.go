@@ -5,6 +5,7 @@ type Agency struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
 	ShortName    string `json:"shortName"`
+	DisplayName  string `json:"displayName"`
 	SortableName string `json:"sortableName"`
 	Slug         string `json:"slug"`
 }

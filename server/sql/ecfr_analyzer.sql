@@ -4,7 +4,10 @@ CREATE TABLE agency
     agencyId         UUID UNIQUE NOT NULL,
     name             TEXT        NOT NULL,
     shortName        TEXT        NOT NULL,
+    displayName      TEXT        NOT NULL,
     sortableName     TEXT        NOT NULL,
     slug             TEXT UNIQUE NOT NULL,
+    children         JSONB       NOT NULL,
+    cfrReferences    JSONB       NOT NULL,
     createdTimestamp TIMESTAMP   NOT NULL
 );

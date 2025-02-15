@@ -8,8 +8,10 @@ import (
 	"github.com/sam-berry/ecfr-analyzer/server/api"
 	"github.com/sam-berry/ecfr-analyzer/server/config"
 	"github.com/sam-berry/ecfr-analyzer/server/dao"
+	"github.com/sam-berry/ecfr-analyzer/server/httpclient"
 	"github.com/sam-berry/ecfr-analyzer/server/service"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,12 +32,20 @@ func main() {
 	app := config.InitHTTPApp()
 	router := app.Group("/ecfr-service")
 
+	httpClient := &httpclient.Client{HttpClient: http.DefaultClient}
+
 	agencyDAO := &dao.AgencyDAO{Db: db}
 
 	agencyService := &service.AgencyService{AgencyDAO: agencyDAO}
+
+	ecfrAPIRoot := "https://www.ecfr.gov/api"
+	agencyImportService := &service.AgencyImportService{
+		HttpClient:  httpClient,
+		EcfrAPIRoot: ecfrAPIRoot,
+		AgencyDAO:   agencyDAO,
+	}
 	ecfrImportService := &service.ECFRImportService{}
 
-	// Unauthenticated APIs
 	registerAPIs(
 		[]api.API{
 			&api.AgencyAPI{
@@ -49,11 +59,14 @@ func main() {
 		},
 	)
 
-	router.Use(config.TokenHandler)
-
-	// Authenticated APIs
+	router.Use(config.AdminAuthHandler)
 	registerAPIs(
-		[]api.API{},
+		[]api.API{
+			&api.AgencyImportAPI{
+				Router:              router,
+				AgencyImportService: agencyImportService,
+			},
+		},
 	)
 
 	go func() {
@@ -72,11 +85,11 @@ func main() {
 	defer shutdownCancel()
 
 	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
-		log.Printf("HTTP server Shutdown: %v", err)
+		log.Printf("HTTP server Shutdown: %w", err)
 	}
 
 	if err := db.Close(); err != nil {
-		log.Printf("Error closing database: %v", err)
+		log.Printf("Error closing database: %w", err)
 	}
 
 	log.Println("Graceful shutdown complete.")
