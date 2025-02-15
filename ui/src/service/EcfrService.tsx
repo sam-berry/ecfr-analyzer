@@ -55,7 +55,6 @@ export async function fetchSearchResults(
   );
 
   if (!res.ok) {
-    console.log(res);
     return errorResponse({
       code: res.status,
       message: "An error occurred fetching search results for agency",

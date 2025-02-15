@@ -41,6 +41,8 @@ export default async function Page(props: {
           return;
         }
 
+        console.log(r.data);
+
         const titleData = r.data?.replace(
           /\<\?xml.+\?\>|\<\!DOCTYPE.+]\>/g,
           "",
