@@ -7,6 +7,8 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/sam-berry/ecfr-analyzer/server/api"
 	"github.com/sam-berry/ecfr-analyzer/server/config"
+	"github.com/sam-berry/ecfr-analyzer/server/dao"
+	"github.com/sam-berry/ecfr-analyzer/server/service"
 	"log"
 	"os"
 	"os/signal"
@@ -26,14 +28,23 @@ func main() {
 	config.ConfigureDB(db)
 
 	app := config.InitHTTPApp()
-
 	router := app.Group("/ecfr-service")
+
+	agencyDAO := &dao.AgencyDAO{Db: db}
+
+	agencyService := &service.AgencyService{AgencyDAO: agencyDAO}
+	ecfrImportService := &service.ECFRImportService{}
 
 	// Unauthenticated APIs
 	registerAPIs(
 		[]api.API{
-			&api.ECFRImport{
-				Router: router,
+			&api.AgencyAPI{
+				Router:        router,
+				AgencyService: agencyService,
+			},
+			&api.ECFRImportAPI{
+				Router:            router,
+				ECFRImportService: ecfrImportService,
 			},
 		},
 	)
