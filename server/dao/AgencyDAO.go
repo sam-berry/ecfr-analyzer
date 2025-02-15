@@ -37,7 +37,7 @@ func (d *AgencyDAO) Insert(
 		`INSERT INTO agency(agencyId, name, shortName, displayName, sortableName, slug, children, cfrReferences, createdTimestamp) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (slug) DO UPDATE
-         SET agencyId = $1, name = $2, shortName = $3, displayName = $4, sortableName = $5, children = $7, cfrReferences = $8, createdTimestamp = $9
+         SET name = $2, shortName = $3, displayName = $4, sortableName = $5, children = $7, cfrReferences = $8, createdTimestamp = $9
          WHERE agency.slug = $6`,
 		id,
 		agency.Name,

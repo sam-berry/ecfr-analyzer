@@ -11,3 +11,13 @@ CREATE TABLE agency
     cfrReferences    JSONB       NOT NULL,
     createdTimestamp TIMESTAMP   NOT NULL
 );
+
+CREATE TABLE title
+(
+    id               SERIAL PRIMARY KEY,
+    titleId          UUID UNIQUE NOT NULL,
+    name             TEXT UNIQUE NOT NULL,
+    content          XML         NOT NULL,
+    createdTimestamp TIMESTAMP   NOT NULL
+);
+

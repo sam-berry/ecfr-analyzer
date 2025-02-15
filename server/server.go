@@ -33,28 +33,34 @@ func main() {
 	router := app.Group("/ecfr-service")
 
 	httpClient := &httpclient.Client{HttpClient: http.DefaultClient}
+	ecfrAPIClient := &httpclient.ECFRAPIClient{
+		APIRoot:    "https://www.ecfr.gov/api",
+		HttpClient: httpClient,
+	}
+	ecfrBulkDataClient := &httpclient.ECFRBulkDataClient{
+		APIRoot:    "https://www.govinfo.gov/bulkdata/json/ECFR",
+		HttpClient: httpClient,
+	}
 
 	agencyDAO := &dao.AgencyDAO{Db: db}
+	titleDAO := &dao.TitleDAO{Db: db}
 
 	agencyService := &service.AgencyService{AgencyDAO: agencyDAO}
 
-	ecfrAPIRoot := "https://www.ecfr.gov/api"
 	agencyImportService := &service.AgencyImportService{
-		HttpClient:  httpClient,
-		EcfrAPIRoot: ecfrAPIRoot,
-		AgencyDAO:   agencyDAO,
+		HttpClient: ecfrAPIClient,
+		AgencyDAO:  agencyDAO,
 	}
-	ecfrImportService := &service.ECFRImportService{}
+	titleImportService := &service.TitleImportService{
+		HttpClient: ecfrBulkDataClient,
+		TitleDAO:   titleDAO,
+	}
 
 	registerAPIs(
 		[]api.API{
 			&api.AgencyAPI{
 				Router:        router,
 				AgencyService: agencyService,
-			},
-			&api.ECFRImportAPI{
-				Router:            router,
-				ECFRImportService: ecfrImportService,
 			},
 		},
 	)
@@ -65,6 +71,10 @@ func main() {
 			&api.AgencyImportAPI{
 				Router:              router,
 				AgencyImportService: agencyImportService,
+			},
+			&api.TitleImportAPI{
+				Router:             router,
+				TitleImportService: titleImportService,
 			},
 		},
 	)

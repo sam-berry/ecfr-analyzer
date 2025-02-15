@@ -10,15 +10,14 @@ import (
 )
 
 type AgencyImportService struct {
-	EcfrAPIRoot string
-	HttpClient  *httpclient.Client
-	AgencyDAO   *dao.AgencyDAO
+	HttpClient *httpclient.ECFRAPIClient
+	AgencyDAO  *dao.AgencyDAO
 }
 
 func (s *AgencyImportService) ImportAgencies(
 	ctx context.Context,
 ) error {
-	resp, err := s.HttpClient.Get(ctx, s.EcfrAPIRoot+"/admin/v1/agencies.json")
+	resp, err := s.HttpClient.Get(ctx, "/admin/v1/agencies.json")
 	if err != nil {
 		return fmt.Errorf("agencies list HTTP request failed, %w", err)
 	}

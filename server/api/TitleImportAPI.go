@@ -6,23 +6,23 @@ import (
 	"github.com/sam-berry/ecfr-analyzer/server/service"
 )
 
-type ECFRImportAPI struct {
-	Router            fiber.Router
-	ECFRImportService *service.ECFRImportService
+type TitleImportAPI struct {
+	Router             fiber.Router
+	TitleImportService *service.TitleImportService
 }
 
-func (api *ECFRImportAPI) Register() {
+func (api *TitleImportAPI) Register() {
 	api.Router.Get(
-		"/ecfr-import", func(c *fiber.Ctx) error {
+		"/import-titles", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
 
-			data, err := api.ECFRImportService.GetData(ctx)
+			err := api.TitleImportService.ImportTitles(ctx)
 
 			if err != nil {
 				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)
 			}
 
-			return httpresponse.ApplySuccessToResponse(c, data)
+			return httpresponse.ApplySuccessToResponse(c, nil)
 		},
 	)
 }
