@@ -52,3 +52,32 @@ func scrubXML(b []byte) []byte {
 
 	return output.Bytes()
 }
+
+type Node struct {
+	XMLName xml.Name   `xml:""`
+	Attrs   []xml.Attr `xml:",any,attr"`
+	Nodes   []Node     `xml:",any"`
+	Text    string     `xml:",chardata"`
+}
+
+func cleanNode(n *Node) {
+	if n.Text != "" {
+		n.Text = removeSpecialCharacters(n.Text)
+	}
+	for i := range n.Nodes {
+		cleanNode(&n.Nodes[i])
+	}
+}
+
+func scrubXMLAggresive(data []byte) ([]byte, error) {
+	var root Node
+	if err := xml.Unmarshal(data, &root); err != nil {
+		return nil, fmt.Errorf("error unmarshaling XML: %w", err)
+	}
+	cleanNode(&root)
+	output, err := xml.Marshal(root)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling XML: %w", err)
+	}
+	return output, nil
+}

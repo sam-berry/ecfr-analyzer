@@ -46,7 +46,7 @@ func main() {
 	titleDAO := &dao.TitleDAO{Db: db}
 
 	agencyService := &service.AgencyService{AgencyDAO: agencyDAO}
-
+	wordCountService := &service.WordCountService{AgencyDAO: agencyDAO, TitleDAO: titleDAO}
 	agencyImportService := &service.AgencyImportService{
 		HttpClient: ecfrAPIClient,
 		AgencyDAO:  agencyDAO,
@@ -68,6 +68,10 @@ func main() {
 	router.Use(config.AdminAuthHandler)
 	registerAPIs(
 		[]api.API{
+			&api.WordCountAPI{
+				Router:           router,
+				WordCountService: wordCountService,
+			},
 			&api.AgencyImportAPI{
 				Router:              router,
 				AgencyImportService: agencyImportService,
