@@ -10,16 +10,22 @@ type ECFRBulkDataClient struct {
 	HttpClient *Client
 }
 
-func (s *ECFRBulkDataClient) Get(
+func (s *ECFRBulkDataClient) GetAllFiles(
 	ctx context.Context,
-	path string,
 ) (*http.Response, error) {
-	return s.HttpClient.Get(ctx, s.APIRoot+path)
+	return s.HttpClient.GetJSON(ctx, s.APIRoot)
+}
+
+func (s *ECFRBulkDataClient) GetJSON(
+	ctx context.Context,
+	url string,
+) (*http.Response, error) {
+	return s.HttpClient.GetJSON(ctx, url)
 }
 
 func (s *ECFRBulkDataClient) GetXML(
 	ctx context.Context,
 	url string,
 ) (*http.Response, error) {
-	return s.HttpClient.Get(ctx, url)
+	return s.HttpClient.GetXML(ctx, url)
 }

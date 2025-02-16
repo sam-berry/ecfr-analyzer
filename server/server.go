@@ -95,11 +95,11 @@ func main() {
 	defer shutdownCancel()
 
 	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
-		log.Printf("HTTP server Shutdown: %w", err)
+		log.Printf("HTTP server Shutdown: %v", err)
 	}
 
 	if err := db.Close(); err != nil {
-		log.Printf("Error closing database: %w", err)
+		log.Printf("Error closing database: %v", err)
 	}
 
 	log.Println("Graceful shutdown complete.")

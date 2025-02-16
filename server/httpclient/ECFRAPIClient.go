@@ -14,5 +14,5 @@ func (s *ECFRAPIClient) Get(
 	ctx context.Context,
 	path string,
 ) (*http.Response, error) {
-	return s.HttpClient.Get(ctx, s.APIRoot+path)
+	return s.HttpClient.GetJSON(ctx, s.APIRoot+path)
 }

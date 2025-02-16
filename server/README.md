@@ -39,3 +39,14 @@ export ECFR_DEVELOPMENT="true"
 ```
 curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-agencies'
 ```
+
+### Import Titles
+
+```
+curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles'
+```
+
+To only import specific titles:
+```
+curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles?titles=16,17,18'
+```
