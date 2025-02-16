@@ -16,7 +16,7 @@ func removeSpecialCharacters(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
 	for _, r := range s {
-		if unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) || unicode.IsPunct(r) || unicode.IsSymbol(r) {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) {
 			b.WriteRune(r)
 		}
 	}

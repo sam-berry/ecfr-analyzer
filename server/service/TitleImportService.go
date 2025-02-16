@@ -27,52 +27,63 @@ func (s *TitleImportService) ImportTitles(ctx context.Context, titlesFilter []st
 		return fmt.Errorf("failed to get all files, %w", err)
 	}
 
-	var wg sync.WaitGroup
+	var messagesWG sync.WaitGroup
 
 	messages := make(chan string)
-	defer close(messages)
+	messagesWG.Add(1)
+	go func() {
+		defer messagesWG.Done()
+		for message := range messages {
+			logInfo(message)
+		}
+	}()
+
 	successes := make(chan int)
-	defer close(successes)
+	var successTitles []string
+	messagesWG.Add(1)
+	go func() {
+		defer messagesWG.Done()
+		for it := range successes {
+			successTitles = append(successTitles, strconv.Itoa(it))
+		}
+	}()
+
 	failures := make(chan int)
-	defer close(failures)
+	var failedTitles []string
+	messagesWG.Add(1)
+	go func() {
+		defer messagesWG.Done()
+		for it := range failures {
+			failedTitles = append(failedTitles, strconv.Itoa(it))
+		}
+	}()
+
+	var filesWg sync.WaitGroup
 
 	for _, file := range allFiles {
-		wg.Add(1)
+		filesWg.Add(1)
 		go s.processTitleFile(
 			ctx,
 			file,
-			&wg,
+			&filesWg,
 			messages,
 			successes,
 			failures,
 		)
 	}
 
-	go func() {
-		for message := range messages {
-			logInfo(message)
-		}
-	}()
+	filesWg.Wait()
 
-	var successTitles []string
-	go func() {
-		for it := range successes {
-			successTitles = append(successTitles, strconv.Itoa(it))
-		}
-	}()
+	close(messages)
+	close(successes)
+	close(failures)
 
-	var failedTitles []string
-	go func() {
-		for it := range failures {
-			failedTitles = append(failedTitles, strconv.Itoa(it))
-		}
-	}()
-
-	wg.Wait()
+	messagesWG.Wait()
 
 	logInfo(fmt.Sprintf("Successfully imported titles: %v", strings.Join(successTitles, ", ")))
 	logInfo(fmt.Sprintf("Failed to import titles: %v", strings.Join(failedTitles, ", ")))
 	logInfo("Complete")
+
 	return nil
 }
 
@@ -87,27 +98,26 @@ func (s *TitleImportService) processTitleFile(
 	defer wg.Done()
 
 	titleNumber := file.CFRTitle
-	name := fmt.Sprintf("Title %d", titleNumber)
 
-	messages <- fmt.Sprintf("Fetching: %v", name)
+	messages <- fmt.Sprintf("Fetching: %v", titleNumber)
 
 	titleFile, err := s.getTitleFile(ctx, file.Link)
 	if err != nil {
-		messages <- fmt.Sprintf("failed to get title file, %v, %v", name, err)
+		messages <- fmt.Sprintf("failed to get title file, %v, %v", titleNumber, err)
 		failures <- titleNumber
 		return
 	}
 
-	messages <- fmt.Sprintf("Downloading: %v", name)
+	messages <- fmt.Sprintf("Downloading: %v", titleNumber)
 
-	err = s.downloadTitleFile(ctx, name, titleFile.Link)
+	err = s.downloadTitleFile(ctx, titleNumber, titleFile.Link)
 	if err != nil {
-		messages <- fmt.Sprintf("failed to download title file, %v, %v", name, err)
+		messages <- fmt.Sprintf("failed to download title file, %v, %v", titleNumber, err)
 		failures <- titleNumber
 		return
 	}
 
-	messages <- fmt.Sprintf("Success: %v", name)
+	messages <- fmt.Sprintf("Success: %v", titleNumber)
 	successes <- titleNumber
 }
 
@@ -172,7 +182,7 @@ func (s *TitleImportService) getTitleFile(ctx context.Context, url string) (
 
 func (s *TitleImportService) downloadTitleFile(
 	ctx context.Context,
-	name string,
+	name int,
 	url string,
 ) error {
 	resp, err := s.HttpClient.GetXML(ctx, url)

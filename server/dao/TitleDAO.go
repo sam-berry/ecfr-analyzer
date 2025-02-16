@@ -16,7 +16,7 @@ type TitleDAO struct {
 
 func (d *TitleDAO) Insert(
 	ctx context.Context,
-	name string,
+	name int,
 	content []byte,
 ) error {
 	id := uuid.New().String()
@@ -36,7 +36,7 @@ func (d *TitleDAO) Insert(
 	return nil
 }
 
-func (d *TitleDAO) insertTitle(ctx context.Context, name string, content []byte, id string) error {
+func (d *TitleDAO) insertTitle(ctx context.Context, name int, content []byte, id string) error {
 	_, err := d.Db.ExecContext(
 		ctx,
 		`INSERT INTO title(titleId, name, content, createdTimestamp) 

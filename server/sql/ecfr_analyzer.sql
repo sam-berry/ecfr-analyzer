@@ -15,9 +15,9 @@ CREATE TABLE agency
 CREATE TABLE title
 (
     id               SERIAL PRIMARY KEY,
-    titleId          UUID UNIQUE NOT NULL,
-    name             TEXT UNIQUE NOT NULL,
-    content          XML         NOT NULL,
-    createdTimestamp TIMESTAMP   NOT NULL
+    titleId          UUID UNIQUE    NOT NULL,
+    name             INTEGER UNIQUE NOT NULL,
+    content          XML            NOT NULL,
+    createdTimestamp TIMESTAMP      NOT NULL
 );
 
