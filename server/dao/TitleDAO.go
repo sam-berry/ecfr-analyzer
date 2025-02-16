@@ -18,7 +18,7 @@ type TitleDAO struct {
 	Db *sql.DB
 }
 
-func (d *TitleDAO) CountWords(ctx context.Context, agencyName string) (int, error) {
+func (d *TitleDAO) CountWords(ctx context.Context, agencyName string, titles []int) (int, error) {
 	var count int
 	err := d.Db.QueryRowContext(
 		ctx,
@@ -40,8 +40,9 @@ func (d *TitleDAO) CountWords(ctx context.Context, agencyName string) (int, erro
               ),
               0
             )
-       ) AS total_word_count FROM title;`,
+       ) AS total_word_count FROM title WHERE name = ANY($2);`,
 		strings.ToLower(agencyName),
+		pq.Array(titles),
 	).Scan(&count)
 
 	if err != nil {

@@ -81,3 +81,56 @@ func (d *AgencyDAO) FindBySlug(
 
 	return &a, nil
 }
+
+func (d *AgencyDAO) FindFullAgencyBySlug(
+	ctx context.Context,
+	slug string,
+) (*data.Agency, error) {
+	var a data.Agency
+	var chData []byte
+	var refData []byte
+
+	err := d.Db.QueryRowContext(
+		ctx,
+		`SELECT id, agencyId, name, shortName, displayName, sortableName, slug, children, cfrReferences
+         FROM agency
+         WHERE slug = $1`,
+		slug,
+	).Scan(
+		&a.InternalId,
+		&a.Id,
+		&a.Name,
+		&a.ShortName,
+		&a.DisplayName,
+		&a.SortableName,
+		&a.Slug,
+		&chData,
+		&refData,
+	)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("error finding agency by slug: %v, %w", slug, err)
+	}
+
+	if err := json.Unmarshal(chData, &a.Children); err != nil {
+		return nil, fmt.Errorf(
+			"error unmarshalling agency children, %v, %w",
+			a.Name,
+			err,
+		)
+	}
+
+	if err := json.Unmarshal(refData, &a.CFRReferences); err != nil {
+		return nil, fmt.Errorf(
+			"error unmarshalling agency references, %v, %w",
+			a.Name,
+			err,
+		)
+	}
+
+	return &a, nil
+}
