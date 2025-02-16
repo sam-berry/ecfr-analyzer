@@ -52,6 +52,33 @@ func (d *TitleDAO) CountWords(ctx context.Context, agencyName string, titles []i
 	return count, nil
 }
 
+func (d *TitleDAO) CountSections(ctx context.Context, agencyName string, titles []int) (
+	int,
+	error,
+) {
+	var count int
+	err := d.Db.QueryRowContext(
+		ctx,
+		`SELECT SUM(
+         COALESCE(
+           (XPATH(
+             'count((//HEAD[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "' || $1 || '")]/..)//DIV8)',
+             content
+           ))[1]::TEXT::NUMERIC,
+           0
+         )
+       ) AS total_count FROM title WHERE name = ANY($2);`,
+		strings.ToLower(agencyName),
+		pq.Array(titles),
+	).Scan(&count)
+
+	if err != nil {
+		return 0, fmt.Errorf("error counting sections for agency, %v, %w", agencyName, err)
+	}
+
+	return count, nil
+}
+
 func (d *TitleDAO) Insert(
 	ctx context.Context,
 	name int,

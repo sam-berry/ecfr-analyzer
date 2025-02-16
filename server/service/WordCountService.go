@@ -49,6 +49,7 @@ func (s *WordCountService) CountWordsForAgency(
 	var agencyWg sync.WaitGroup
 	var mu sync.Mutex
 	var totalWordCount int
+	var totalSectionCount int
 
 	throttle := make(chan struct{}, MaxConcurrentAgencyLookups)
 
@@ -61,6 +62,7 @@ func (s *WordCountService) CountWordsForAgency(
 			defer func() { <-throttle }()
 
 			name := agencyResult.Name
+
 			wordCount, err := s.TitleDAO.CountWords(ctx, name, agencyResult.Titles)
 			if err != nil {
 				messages <- fmt.Sprintf(
@@ -75,11 +77,31 @@ func (s *WordCountService) CountWordsForAgency(
 			totalWordCount += wordCount
 			mu.Unlock()
 
+			sectionCount, err := s.TitleDAO.CountSections(ctx, name, agencyResult.Titles)
+			if err != nil {
+				messages <- fmt.Sprintf(
+					"failed to count sections for agency, %v, %v",
+					name,
+					err,
+				)
+				return
+			}
+
+			mu.Lock()
+			totalSectionCount += sectionCount
+			mu.Unlock()
+
 			messages <- fmt.Sprintf(
 				"Counted words for agency: %v, count: %d, total: %d",
 				name,
 				wordCount,
 				totalWordCount,
+			)
+			messages <- fmt.Sprintf(
+				"Counted sections for agency: %v, count: %d, total: %d",
+				name,
+				sectionCount,
+				totalSectionCount,
 			)
 		}(agencyResult)
 	}
@@ -90,7 +112,8 @@ func (s *WordCountService) CountWordsForAgency(
 	messagesWG.Wait()
 
 	return map[string]any{
-		"wordCount": totalWordCount,
+		"wordCount":    totalWordCount,
+		"sectionCount": totalSectionCount,
 	}, nil
 }
 
