@@ -48,10 +48,22 @@ func (s *ComputedValueService) ProcessTitleMetrics(
 
 func (s *ComputedValueService) ProcessAgencyMetrics(
 	ctx context.Context,
+	onlySubAgencies bool,
 ) error {
 	agencies, err := s.AgencyDAO.FindAll(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find agencies, %w", err)
+	}
+
+	if onlySubAgencies {
+		var subAgencies []*data.Agency
+		for _, agency := range agencies {
+			for _, child := range agency.Children {
+				child.Parent = agency
+				subAgencies = append(subAgencies, child)
+			}
+		}
+		agencies = subAgencies
 	}
 
 	var messagesWG sync.WaitGroup
@@ -96,11 +108,19 @@ func (s *ComputedValueService) ProcessAgencyMetrics(
 			defer agencyWg.Done()
 			defer func() { <-throttle }()
 
-			slug := agency.Slug
+			var slug string
+			var subAgencyFilter string
+			if onlySubAgencies {
+				slug = agency.Parent.Slug
+				subAgencyFilter = agency.Name
+			} else {
+				slug = agency.Slug
+				subAgencyFilter = ""
+			}
 
 			messages <- fmt.Sprintf("Processing: %v", slug)
 
-			result, err := s.AgencyMetricService.CountWordsAndSections(ctx, slug)
+			result, err := s.AgencyMetricService.CountWordsAndSections(ctx, slug, subAgencyFilter)
 			if err != nil {
 				messages <- fmt.Sprintf("failed to count agency metrics, %v, %v", slug, err)
 				failures <- slug
@@ -114,8 +134,15 @@ func (s *ComputedValueService) ProcessAgencyMetrics(
 				return
 			}
 
+			var key string
+			if onlySubAgencies {
+				key = data.ComputedValueKeySubAgencyMetric(agency.Parent.Id, agency.Name)
+			} else {
+				key = data.ComputedValueKeyAgencyMetric(agency.Id)
+			}
+
 			cv := &data.ComputedValue{
-				Key:  data.ComputedValueKeyAgencyMetric(agency.Id),
+				Key:  key,
 				Data: rBytes,
 			}
 

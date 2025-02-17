@@ -12,6 +12,7 @@ type Agency struct {
 	DisplayName      string             `json:"displayName"`
 	SortableName     string             `json:"sortableName"`
 	Slug             string             `json:"slug"`
+	Parent           *Agency            `json:"parent"`
 	Children         []*Agency          `json:"children"`
 	AgencyReferences []*AgencyReference `json:"cfr_references"`
 }

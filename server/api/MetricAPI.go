@@ -18,7 +18,7 @@ func (api *MetricAPI) Register() {
 			ctx := c.UserContext()
 			slug := c.Params("slug")
 
-			r, err := api.AgencyMetricService.CountWordsAndSections(ctx, slug)
+			r, err := api.AgencyMetricService.CountWordsAndSections(ctx, slug, "")
 
 			if err != nil {
 				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)

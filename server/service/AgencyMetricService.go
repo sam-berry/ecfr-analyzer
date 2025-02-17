@@ -24,16 +24,26 @@ type AgencyMetricService struct {
 func (s *AgencyMetricService) CountWordsAndSections(
 	ctx context.Context,
 	slug string,
+	subAgencyNameFilter string,
 ) (*data.AgencyMetricResponse, error) {
-	agency, err := s.AgencyDAO.FindFullAgencyBySlug(ctx, slug)
+	agency, err := s.AgencyDAO.FindBySlug(ctx, slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find agency, %v, %w", slug, err)
 	}
 
-	agencyResults := make([]*AgencyResult, len(agency.Children)+1)
-	agencyResults[0] = s.buildAgencyResult(agency)
-	for i, childAgency := range agency.Children {
-		agencyResults[i+1] = s.buildAgencyResult(childAgency)
+	var agencyResults []*AgencyResult
+	if subAgencyNameFilter == "" {
+		agencyResults = append(agencyResults, s.buildAgencyResult(agency))
+		for _, childAgency := range agency.Children {
+			agencyResults = append(agencyResults, s.buildAgencyResult(childAgency))
+		}
+	} else {
+		for _, childAgency := range agency.Children {
+			if childAgency.Name == subAgencyNameFilter {
+				agencyResults = append(agencyResults, s.buildAgencyResult(childAgency))
+				break
+			}
+		}
 	}
 
 	var messagesWG sync.WaitGroup

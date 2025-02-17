@@ -30,7 +30,21 @@ func (api *ComputedValueAPI) Register() {
 		"/compute/agency-metrics", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
 
-			err := api.ComputedValueService.ProcessAgencyMetrics(ctx)
+			err := api.ComputedValueService.ProcessAgencyMetrics(ctx, false)
+
+			if err != nil {
+				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)
+			}
+
+			return httpresponse.ApplySuccessToResponse(c, nil)
+		},
+	)
+
+	api.Router.Post(
+		"/compute/sub-agency-metrics", func(c *fiber.Ctx) error {
+			ctx := c.UserContext()
+
+			err := api.ComputedValueService.ProcessAgencyMetrics(ctx, true)
 
 			if err != nil {
 				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)

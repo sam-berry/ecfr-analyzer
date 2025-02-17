@@ -57,35 +57,10 @@ func (d *AgencyDAO) Insert(
 	return nil
 }
 
-func (d *AgencyDAO) FindBySlug(
-	ctx context.Context,
-	slug string,
-) (*data.Agency, error) {
-	var a data.Agency
-
-	err := d.Db.QueryRowContext(
-		ctx,
-		`SELECT id, agencyId, name, shortName, displayName, sortableName, slug
-         FROM agency
-         WHERE slug = $1`,
-		slug,
-	).Scan(&a.InternalId, &a.Id, &a.Name, &a.ShortName, &a.DisplayName, &a.SortableName, &a.Slug)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
-
-		return nil, fmt.Errorf("error finding agency by slug: %v, %w", slug, err)
-	}
-
-	return &a, nil
-}
-
 func (d *AgencyDAO) FindAll(ctx context.Context) ([]*data.Agency, error) {
 	rows, err := d.Db.QueryContext(
 		ctx,
-		`SELECT id, agencyId, name, shortName, displayName, sortableName, slug
+		`SELECT id, agencyId, name, shortName, displayName, sortableName, slug, children, cfrReferences
          FROM agency`,
 	)
 
@@ -96,6 +71,9 @@ func (d *AgencyDAO) FindAll(ctx context.Context) ([]*data.Agency, error) {
 	var agencies []*data.Agency
 	for rows.Next() {
 		var agency data.Agency
+		var chData []byte
+		var refData []byte
+
 		err := rows.Scan(
 			&agency.InternalId,
 			&agency.Id,
@@ -104,18 +82,35 @@ func (d *AgencyDAO) FindAll(ctx context.Context) ([]*data.Agency, error) {
 			&agency.DisplayName,
 			&agency.SortableName,
 			&agency.Slug,
+			&chData,
+			&refData,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning agency row: %w", err)
 		}
 
+		if err := json.Unmarshal(chData, &agency.Children); err != nil {
+			return nil, fmt.Errorf(
+				"error unmarshalling agency children, %v, %w",
+				agency.Name,
+				err,
+			)
+		}
+
+		if err := json.Unmarshal(refData, &agency.AgencyReferences); err != nil {
+			return nil, fmt.Errorf(
+				"error unmarshalling agency references, %v, %w",
+				agency.Name,
+				err,
+			)
+		}
 		agencies = append(agencies, &agency)
 	}
 
 	return agencies, nil
 }
 
-func (d *AgencyDAO) FindFullAgencyBySlug(
+func (d *AgencyDAO) FindBySlug(
 	ctx context.Context,
 	slug string,
 ) (*data.Agency, error) {
