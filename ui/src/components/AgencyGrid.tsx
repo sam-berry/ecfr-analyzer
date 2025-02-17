@@ -3,12 +3,13 @@
 import NumberCounter from "ecfr-analyzer/components/NumberCounter";
 import InfoPopover from "ecfr-analyzer/components/InfoPopover";
 import { ActionIcon, Button, TextInput } from "@mantine/core";
-import { IconInfoCircle } from "@tabler/icons-react";
+import { IconArrowRight, IconInfoCircle } from "@tabler/icons-react";
 import GovInfoBulkDataLink from "ecfr-analyzer/components/GovInfoBulkDataLink";
 import { AgencyMetrics } from "ecfr-analyzer/data/AgencyMetrics";
 import { useEffect, useState } from "react";
 import Fuse from "fuse.js";
 import SortButton from "ecfr-analyzer/components/SortButton";
+import Link from "next/link";
 
 enum AgencyFilter {
   WORDS_DESC,
@@ -23,8 +24,10 @@ const defaultSort = AgencyFilter.WORDS_DESC;
 
 export default function AgencyGrid({
   agencyMetrics,
+  disableDetails,
 }: {
   agencyMetrics: AgencyMetrics[];
+  disableDetails?: boolean;
 }) {
   const pageSize = 10;
 
@@ -42,7 +45,7 @@ export default function AgencyGrid({
         "agency.sortableName",
         "agency.children.name",
       ],
-      threshold: 0.2,
+      threshold: 0.3,
     });
 
     const agencies = (
@@ -89,7 +92,7 @@ export default function AgencyGrid({
           }}
         />
       </div>
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4">
         <SortButton
           isAsc={filter === AgencyFilter.WORDS_ASC}
           isDesc={filter === AgencyFilter.WORDS_DESC}
@@ -117,9 +120,15 @@ export default function AgencyGrid({
       </div>
       <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-12">
         {displayedAgencies.map((it, i) => (
-          <div
+          <Link
             key={i}
-            className="border-primary bg-light w-full max-w-[26rem] shrink-0 border p-4"
+            className={`border-primary bg-light w-full max-w-[26rem] shrink-0 border p-4 transition ease-in-out ${disableDetails ? "cursor-default" : "hover:shadow-lg"}`}
+            href={disableDetails ? "" : `/agency/${it.agency.slug}`}
+            onClick={(event) => {
+              if (disableDetails) {
+                event.preventDefault();
+              }
+            }}
           >
             <div
               className="mb-2 line-clamp-2 h-[3.5rem] text-lg font-semibold"
@@ -186,7 +195,14 @@ export default function AgencyGrid({
                 </div>
               ))}
             </div>
-          </div>
+            {!disableDetails && (
+              <div className="-mr-2 mt-4 flex justify-end">
+                <Button variant="subtle" size="compact-sm">
+                  View details <IconArrowRight size={15} className="ml-1" />
+                </Button>
+              </div>
+            )}
+          </Link>
         ))}
       </div>
       {agencyMetrics.length && visibleCount <= agencyMetrics.length && (

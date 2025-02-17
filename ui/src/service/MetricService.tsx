@@ -44,15 +44,32 @@ export async function fetchAgencyMetrics(): Promise<
 
 export async function fetchMetricsForAgency(
   slug: string,
-): Promise<ResponseContainer<AgencyMetrics[]>> {
-  const res = await fetch(`${apiRoot}/metrics/agencies`, {
+): Promise<ResponseContainer<AgencyMetrics>> {
+  const res = await fetch(`${apiRoot}/metrics/agencies/${slug}`, {
     next: { revalidate: defaultRevalidate },
   });
 
   if (!res.ok) {
     return errorResponse({
       code: res.status,
-      message: "An error occurred fetching agencies metrics",
+      message: "An error occurred fetching metrics for agency",
+    });
+  }
+
+  return await res.json();
+}
+
+export async function fetchSubAgencyMetrics(
+  slug: string,
+): Promise<ResponseContainer<AgencyMetrics[]>> {
+  const res = await fetch(`${apiRoot}/metrics/agencies/${slug}/sub-agencies`, {
+    next: { revalidate: defaultRevalidate },
+  });
+
+  if (!res.ok) {
+    return errorResponse({
+      code: res.status,
+      message: "An error occurred fetching subagency metrics for agency",
     });
   }
 
