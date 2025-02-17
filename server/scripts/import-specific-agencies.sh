@@ -15,6 +15,8 @@ slugs=(
 )
 
 for slug in "${slugs[@]}"; do
+  echo "Sending request for ${slug}"
+
   curl -X POST \
        -H "Authorization: Bearer ${token}" \
        "https://ecfr-server-693619510334.us-central1.run.app/ecfr-service/compute/agency-metrics?agencies=${slug}" &

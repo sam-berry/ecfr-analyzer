@@ -29,7 +29,7 @@ export default function AgencyGrid({
   agencyMetrics: AgencyMetrics[];
   disableDetails?: boolean;
 }) {
-  const pageSize = 10;
+  const pageSize = 12;
 
   const [filter, setFilter] = useState<AgencyFilter>(defaultSort);
   const [filteredAgencies, setFilteredAgencies] = useState<AgencyMetrics[]>([]);
