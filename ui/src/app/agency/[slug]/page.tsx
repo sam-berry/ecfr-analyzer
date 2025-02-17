@@ -11,6 +11,7 @@ import { Button } from "@mantine/core";
 import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
 import AgencyGrid from "ecfr-analyzer/components/AgencyGrid";
+import { countSubAgencies } from "ecfr-analyzer/service/AgencyService";
 
 export default async function Page(props: {
   params: Promise<{ slug: string }>;
@@ -31,7 +32,7 @@ export default async function Page(props: {
 
   const agency = agencyMetrics.agency;
 
-  const subAgencyCount = agency.children?.length || 0;
+  const subAgencyCount = countSubAgencies(agency);
   const references =
     (agency.cfr_references?.length || 0) +
     (agency.children || []).reduce(
@@ -102,10 +103,7 @@ export default async function Page(props: {
             <div className="font-title decoration-primary-700 mb-7 w-full text-center text-2xl font-bold uppercase underline decoration-4 underline-offset-8 md:text-4xl">
               Inner Agencies
             </div>
-            <AgencyGrid
-              agencyMetrics={subAgencyMetrics}
-              disableDetails={true}
-            />
+            <AgencyGrid agencyMetrics={subAgencyMetrics} isSubAgency={true} />
           </div>
         )}
       </div>

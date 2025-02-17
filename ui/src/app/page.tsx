@@ -8,6 +8,7 @@ import GovInfoAPILink from "ecfr-analyzer/components/GovInfoAPILink";
 import MetricsGrid from "ecfr-analyzer/components/MetricsGrid";
 import AgencyGrid from "ecfr-analyzer/components/AgencyGrid";
 import PageContainer from "ecfr-analyzer/components/PageContainer";
+import { countSubAgencies } from "ecfr-analyzer/service/AgencyService";
 
 export default async function Page() {
   const titleMetricsResponse = await fetchTitleMetrics();
@@ -24,7 +25,7 @@ export default async function Page() {
 
   const agencyCount = agencyMetrics.length;
   const subAgencyCount = agencyMetrics.reduce(
-    (acc, cur) => acc + cur.agency.children.length,
+    (acc, cur) => acc + countSubAgencies(cur.agency),
     0,
   );
 
