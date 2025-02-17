@@ -41,3 +41,20 @@ export async function fetchAgencyMetrics(): Promise<
 
   return await res.json();
 }
+
+export async function fetchMetricsForAgency(
+  slug: string,
+): Promise<ResponseContainer<AgencyMetrics[]>> {
+  const res = await fetch(`${apiRoot}/metrics/agencies`, {
+    next: { revalidate: defaultRevalidate },
+  });
+
+  if (!res.ok) {
+    return errorResponse({
+      code: res.status,
+      message: "An error occurred fetching agencies metrics",
+    });
+  }
+
+  return await res.json();
+}

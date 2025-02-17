@@ -49,10 +49,26 @@ func (s *ComputedValueService) ProcessTitleMetrics(
 func (s *ComputedValueService) ProcessAgencyMetrics(
 	ctx context.Context,
 	onlySubAgencies bool,
+	agenciesFilter []string,
 ) error {
 	agencies, err := s.AgencyDAO.FindAll(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to find agencies, %w", err)
+	}
+
+	filterMap := make(map[string]bool, len(agenciesFilter))
+	for _, agency := range agenciesFilter {
+		filterMap[agency] = true
+	}
+
+	if len(agenciesFilter) > 0 {
+		var filteredAgencies []*data.Agency
+		for _, agency := range agencies {
+			if filterMap[agency.Slug] {
+				filteredAgencies = append(filteredAgencies, agency)
+			}
+		}
+		agencies = filteredAgencies
 	}
 
 	if onlySubAgencies {
