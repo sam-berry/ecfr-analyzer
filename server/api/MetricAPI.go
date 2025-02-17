@@ -39,4 +39,34 @@ func (api *MetricAPI) Register() {
 			return httpresponse.ApplySuccessToResponse(c, r)
 		},
 	)
+
+	api.Router.Get(
+		"/metrics/agencies/:slug", func(c *fiber.Ctx) error {
+			ctx := c.UserContext()
+			slug := c.Params("slug")
+
+			r, err := api.MetricService.GetMetricsForAgency(ctx, slug)
+
+			if err != nil {
+				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)
+			}
+
+			return httpresponse.ApplySuccessToResponse(c, r)
+		},
+	)
+
+	api.Router.Get(
+		"/metrics/agencies/:slug/sub-agencies", func(c *fiber.Ctx) error {
+			ctx := c.UserContext()
+			slug := c.Params("slug")
+
+			r, err := api.MetricService.GetSubAgencyMetrics(ctx, slug)
+
+			if err != nil {
+				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)
+			}
+
+			return httpresponse.ApplySuccessToResponse(c, r)
+		},
+	)
 }

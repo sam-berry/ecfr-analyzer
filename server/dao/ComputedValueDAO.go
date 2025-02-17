@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/sam-berry/ecfr-analyzer/server/data"
@@ -66,6 +67,9 @@ func (d *ComputedValueDAO) FindByKey(
 	)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("error finding computed value by key: %v, %w", key, err)
 	}
 

@@ -76,3 +76,11 @@ curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'lo
 * Subagencies metric import - this was an experiment that ended up working, but it could be handled cleaner
   instead of passing the `onlySubAgencies` variable and forking the top-level logic
 * Import historical CFR records and compute metrics based on changes over time
+
+## Find agencies that are missing computed values
+```
+SELECT a.slug, cv.id
+FROM agency a
+         LEFT JOIN computed_value cv ON cv.key = CONCAT('agency-metrics__', a.agencyId)
+WHERE cv.id IS NULL;
+```

@@ -45,7 +45,13 @@ func ComputedValueKeyAgencyMetric(agencyId string) string {
 	return CreateComputedValueKey(ComputedValueKeyAgencyMetricPrefix, agencyId)
 }
 
+var ComputedValueKeySubAgencyMetricPrefix = "sub-agency-metrics"
+
 func ComputedValueKeySubAgencyMetric(parentId string, agencyName string) string {
 	agencyId := strings.ToLower(agencyName)
-	return CreateComputedValueKey("sub-agency-metrics", parentId, sanitize(agencyId))
+	return CreateComputedValueKey(
+		ComputedValueKeySubAgencyMetricPrefix,
+		parentId,
+		sanitize(agencyId),
+	)
 }
