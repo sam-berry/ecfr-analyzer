@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/sam-berry/ecfr-analyzer/server/dao"
 	"github.com/sam-berry/ecfr-analyzer/server/data"
 	"sync"
@@ -15,12 +16,12 @@ type AgencyResult struct {
 
 var MaxConcurrentAgencyLookups = 10
 
-type WordCountService struct {
+type AgencyMetricService struct {
 	AgencyDAO *dao.AgencyDAO
 	TitleDAO  *dao.TitleDAO
 }
 
-func (s *WordCountService) CountWordsForAgency(
+func (s *AgencyMetricService) CountWordsAndSections(
 	ctx context.Context,
 	slug string,
 ) (map[string]any, error) {
@@ -42,7 +43,7 @@ func (s *WordCountService) CountWordsForAgency(
 	go func() {
 		defer messagesWG.Done()
 		for message := range messages {
-			logInfo(message)
+			s.logInfo(message)
 		}
 	}()
 
@@ -51,11 +52,11 @@ func (s *WordCountService) CountWordsForAgency(
 	var totalWordCount int
 	var totalSectionCount int
 
-	throttle := make(chan struct{}, MaxConcurrentAgencyLookups)
+	throttle := make(chan int, MaxConcurrentAgencyLookups)
 
 	for _, agencyResult := range agencyResults {
 		agencyWg.Add(1)
-		throttle <- struct{}{}
+		throttle <- 1
 
 		go func(agencyResult *AgencyResult) {
 			defer agencyWg.Done()
@@ -63,7 +64,7 @@ func (s *WordCountService) CountWordsForAgency(
 
 			name := agencyResult.Name
 
-			wordCount, err := s.TitleDAO.CountWords(ctx, name, agencyResult.Titles)
+			wordCount, err := s.TitleDAO.CountAgencyWords(ctx, name, agencyResult.Titles)
 			if err != nil {
 				messages <- fmt.Sprintf(
 					"failed to count words for agency, %v, %v",
@@ -77,7 +78,7 @@ func (s *WordCountService) CountWordsForAgency(
 			totalWordCount += wordCount
 			mu.Unlock()
 
-			sectionCount, err := s.TitleDAO.CountSections(ctx, name, agencyResult.Titles)
+			sectionCount, err := s.TitleDAO.CountAgencySections(ctx, name, agencyResult.Titles)
 			if err != nil {
 				messages <- fmt.Sprintf(
 					"failed to count sections for agency, %v, %v",
@@ -90,19 +91,6 @@ func (s *WordCountService) CountWordsForAgency(
 			mu.Lock()
 			totalSectionCount += sectionCount
 			mu.Unlock()
-
-			messages <- fmt.Sprintf(
-				"Counted words for agency: %v, count: %d, total: %d",
-				name,
-				wordCount,
-				totalWordCount,
-			)
-			messages <- fmt.Sprintf(
-				"Counted sections for agency: %v, count: %d, total: %d",
-				name,
-				sectionCount,
-				totalSectionCount,
-			)
 		}(agencyResult)
 	}
 
@@ -117,7 +105,7 @@ func (s *WordCountService) CountWordsForAgency(
 	}, nil
 }
 
-func (s *WordCountService) buildAgencyResult(agency *data.Agency) *AgencyResult {
+func (s *AgencyMetricService) buildAgencyResult(agency *data.Agency) *AgencyResult {
 	var titles []int
 	for _, ref := range agency.CFRReferences {
 		titles = append(titles, ref.Title)
@@ -126,4 +114,8 @@ func (s *WordCountService) buildAgencyResult(agency *data.Agency) *AgencyResult 
 		Name:   agency.Name,
 		Titles: titles,
 	}
+}
+
+func (s *AgencyMetricService) logInfo(message string) {
+	log.Info(fmt.Sprintf("Agency Metrics: %v", message))
 }

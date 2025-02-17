@@ -37,16 +37,23 @@ export ECFR_DEVELOPMENT="true"
 ### Import Agencies
 
 ```
-curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-agencies'
+curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-agencies'
 ```
 
 ### Import Titles
 
 ```
-curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles'
+curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles'
 ```
 
 To only import specific titles:
+
 ```
-curl -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles?titles=16,17,18'
+curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles?titles=16,17,18'
 ```
+
+## Potential Enhancements
+
+* Precompute text values for title XML. Write a job to parse the entire CFR and save
+  chapters/parts/sections/etc as structured data that can be easily queried. Do not need XLST for
+  this, can be done by iterating through the tree and following the DIV# guidelines. 

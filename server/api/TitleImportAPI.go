@@ -13,7 +13,7 @@ type TitleImportAPI struct {
 }
 
 func (api *TitleImportAPI) Register() {
-	api.Router.Get(
+	api.Router.Post(
 		"/import-titles", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
 			titles := c.Query("titles")

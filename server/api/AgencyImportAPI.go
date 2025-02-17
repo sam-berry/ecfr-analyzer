@@ -12,7 +12,7 @@ type AgencyImportAPI struct {
 }
 
 func (api *AgencyImportAPI) Register() {
-	api.Router.Get(
+	api.Router.Post(
 		"/import-agencies", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
 

@@ -15,12 +15,12 @@ import (
 )
 
 type TitleImportService struct {
-	HttpClient *httpclient.ECFRBulkDataClient
-	TitleDAO   *dao.TitleDAO
+	HttpClient     *httpclient.ECFRBulkDataClient
+	TitleImportDAO *dao.TitleImportDAO
 }
 
 func (s *TitleImportService) ImportTitles(ctx context.Context, titlesFilter []string) error {
-	logInfo("Start")
+	s.logInfo("Start")
 
 	allFiles, err := s.getAllFiles(ctx, titlesFilter)
 	if err != nil {
@@ -34,7 +34,7 @@ func (s *TitleImportService) ImportTitles(ctx context.Context, titlesFilter []st
 	go func() {
 		defer messagesWG.Done()
 		for message := range messages {
-			logInfo(message)
+			s.logInfo(message)
 		}
 	}()
 
@@ -80,9 +80,9 @@ func (s *TitleImportService) ImportTitles(ctx context.Context, titlesFilter []st
 
 	messagesWG.Wait()
 
-	logInfo(fmt.Sprintf("Successfully imported titles: %v", strings.Join(successTitles, ", ")))
-	logInfo(fmt.Sprintf("Failed to import titles: %v", strings.Join(failedTitles, ", ")))
-	logInfo("Complete")
+	s.logInfo(fmt.Sprintf("Successfully imported titles: %v", strings.Join(successTitles, ", ")))
+	s.logInfo(fmt.Sprintf("Failed to import titles: %v", strings.Join(failedTitles, ", ")))
+	s.logInfo("Complete")
 
 	return nil
 }
@@ -196,7 +196,7 @@ func (s *TitleImportService) downloadTitleFile(
 		return fmt.Errorf("failed to read title content, %w", err)
 	}
 
-	err = s.TitleDAO.Insert(ctx, name, content)
+	err = s.TitleImportDAO.Insert(ctx, name, content)
 	if err != nil {
 		return fmt.Errorf("failed to insert title, %w", err)
 	}
@@ -204,6 +204,6 @@ func (s *TitleImportService) downloadTitleFile(
 	return nil
 }
 
-func logInfo(message string) {
+func (s *TitleImportService) logInfo(message string) {
 	log.Info(fmt.Sprintf("Title Import: %v", message))
 }
