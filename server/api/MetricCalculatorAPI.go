@@ -6,17 +6,21 @@ import (
 	"github.com/sam-berry/ecfr-analyzer/server/service"
 )
 
-type MetricAPI struct {
-	Router        fiber.Router
-	MetricService *service.MetricService
+// Read only API for testing internal metric calculation
+
+type MetricCalculatorAPI struct {
+	Router              fiber.Router
+	AgencyMetricService *service.AgencyMetricService
+	TitleMetricService  *service.TitleMetricService
 }
 
-func (api *MetricAPI) Register() {
+func (api *MetricCalculatorAPI) Register() {
 	api.Router.Get(
-		"/metrics/titles", func(c *fiber.Ctx) error {
+		"/calculate/agency-metrics/:slug", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
+			slug := c.Params("slug")
 
-			r, err := api.MetricService.GetTitleMetrics(ctx)
+			r, err := api.AgencyMetricService.CountWordsAndSections(ctx, slug, "")
 
 			if err != nil {
 				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)
@@ -27,10 +31,10 @@ func (api *MetricAPI) Register() {
 	)
 
 	api.Router.Get(
-		"/metrics/agencies", func(c *fiber.Ctx) error {
+		"/calculate/title-metrics", func(c *fiber.Ctx) error {
 			ctx := c.UserContext()
 
-			r, err := api.MetricService.GetAgencyMetrics(ctx)
+			r, err := api.TitleMetricService.CountAllWordsAndSections(ctx)
 
 			if err != nil {
 				return httpresponse.ApplyErrorToResponse(c, "Unexpected error", err)

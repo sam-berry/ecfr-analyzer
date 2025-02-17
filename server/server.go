@@ -64,6 +64,10 @@ func main() {
 		ComputedValueDAO:    computedValueDAO,
 		AgencyDAO:           agencyDAO,
 	}
+	metricService := &service.MetricService{
+		AgencyDAO:        agencyDAO,
+		ComputedValueDAO: computedValueDAO,
+	}
 
 	registerAPIs(
 		[]api.API{
@@ -71,13 +75,17 @@ func main() {
 				Router:        router,
 				AgencyService: agencyService,
 			},
+			&api.MetricAPI{
+				Router:        router,
+				MetricService: metricService,
+			},
 		},
 	)
 
 	router.Use(config.AdminAuthHandler)
 	registerAPIs(
 		[]api.API{
-			&api.MetricAPI{
+			&api.MetricCalculatorAPI{
 				Router:              router,
 				AgencyMetricService: agencyMetricService,
 				TitleMetricService:  titleMetricService,

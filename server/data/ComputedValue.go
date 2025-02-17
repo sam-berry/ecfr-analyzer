@@ -8,13 +8,19 @@ import (
 
 type ComputedValue struct {
 	InternalId int             `json:"-"`
-	ValueId    string          `json:"valueId"`
+	Id         string          `json:"valueId"`
 	Key        string          `json:"key"`
 	Data       json.RawMessage `json:"data"`
 }
 
-func createKey(parts ...string) string {
-	return strings.Join(parts, "__")
+var delimiter = "__"
+
+func CreateComputedValueKey(parts ...string) string {
+	return strings.Join(parts, delimiter)
+}
+
+func ParseComputedValueKey(key string) []string {
+	return strings.Split(key, delimiter)
 }
 
 func sanitize(s string) string {
@@ -33,11 +39,13 @@ func ComputedValueKeyGlobalTitleMetrics() string {
 	return "global-title-metrics"
 }
 
+var ComputedValueKeyAgencyMetricPrefix = "agency-metrics"
+
 func ComputedValueKeyAgencyMetric(agencyId string) string {
-	return createKey("agency-metrics", agencyId)
+	return CreateComputedValueKey(ComputedValueKeyAgencyMetricPrefix, agencyId)
 }
 
 func ComputedValueKeySubAgencyMetric(parentId string, agencyName string) string {
 	agencyId := strings.ToLower(agencyName)
-	return createKey("sub-agency-metrics", parentId, sanitize(agencyId))
+	return CreateComputedValueKey("sub-agency-metrics", parentId, sanitize(agencyId))
 }
