@@ -27,7 +27,7 @@ const titleFont = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "eCFR Analyzer",
+  title: "Code of Federal Regulations - Metrics",
   description: "Enhanced analysis of Federal Regulations data",
 };
 
@@ -73,6 +73,10 @@ export default function RootLayout({
       className={`${bodyFont.variable} ${titleFont.variable}`}
     >
       <head>
+        <link
+          rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇺🇸</text></svg>"
+        />
         <ColorSchemeScript />
       </head>
       <body>

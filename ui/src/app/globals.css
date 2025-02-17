@@ -40,5 +40,6 @@
 
 body {
     font-family: var(--body-font), sans-serif;
+    color: var(--primary-color);
 }
 
