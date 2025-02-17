@@ -45,6 +45,7 @@ func main() {
 	agencyDAO := &dao.AgencyDAO{Db: db}
 	titleDAO := &dao.TitleDAO{Db: db}
 	titleImportDAO := &dao.TitleImportDAO{Db: db}
+	computedValueDAO := &dao.ComputedValueDAO{Db: db}
 
 	agencyService := &service.AgencyService{AgencyDAO: agencyDAO}
 	agencyMetricService := &service.AgencyMetricService{AgencyDAO: agencyDAO, TitleDAO: titleDAO}
@@ -56,6 +57,12 @@ func main() {
 	titleImportService := &service.TitleImportService{
 		HttpClient:     ecfrBulkDataClient,
 		TitleImportDAO: titleImportDAO,
+	}
+	computedValueService := &service.ComputedValueService{
+		TitleMetricService:  titleMetricService,
+		AgencyMetricService: agencyMetricService,
+		ComputedValueDAO:    computedValueDAO,
+		AgencyDAO:           agencyDAO,
 	}
 
 	registerAPIs(
@@ -74,6 +81,10 @@ func main() {
 				Router:              router,
 				AgencyMetricService: agencyMetricService,
 				TitleMetricService:  titleMetricService,
+			},
+			&api.ComputedValueAPI{
+				Router:               router,
+				ComputedValueService: computedValueService,
 			},
 			&api.AgencyImportAPI{
 				Router:              router,

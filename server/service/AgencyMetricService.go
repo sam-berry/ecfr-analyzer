@@ -24,7 +24,7 @@ type AgencyMetricService struct {
 func (s *AgencyMetricService) CountWordsAndSections(
 	ctx context.Context,
 	slug string,
-) (map[string]any, error) {
+) (*data.AgencyMetricResponse, error) {
 	agency, err := s.AgencyDAO.FindFullAgencyBySlug(ctx, slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find agency, %v, %w", slug, err)
@@ -43,7 +43,7 @@ func (s *AgencyMetricService) CountWordsAndSections(
 	go func() {
 		defer messagesWG.Done()
 		for message := range messages {
-			s.logInfo(message)
+			log.Info(fmt.Sprintf("Agency Metrics Process: %v", message))
 		}
 	}()
 
@@ -99,23 +99,19 @@ func (s *AgencyMetricService) CountWordsAndSections(
 	close(messages)
 	messagesWG.Wait()
 
-	return map[string]any{
-		"wordCount":    totalWordCount,
-		"sectionCount": totalSectionCount,
+	return &data.AgencyMetricResponse{
+		WordCount:    totalWordCount,
+		SectionCount: totalSectionCount,
 	}, nil
 }
 
 func (s *AgencyMetricService) buildAgencyResult(agency *data.Agency) *AgencyResult {
 	var titles []int
-	for _, ref := range agency.CFRReferences {
+	for _, ref := range agency.AgencyReferences {
 		titles = append(titles, ref.Title)
 	}
 	return &AgencyResult{
 		Name:   agency.Name,
 		Titles: titles,
 	}
-}
-
-func (s *AgencyMetricService) logInfo(message string) {
-	log.Info(fmt.Sprintf("Agency Metrics: %v", message))
 }

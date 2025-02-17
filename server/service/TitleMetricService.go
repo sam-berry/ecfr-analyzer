@@ -17,7 +17,7 @@ type TitleMetricService struct {
 
 func (s *TitleMetricService) CountAllWordsAndSections(
 	ctx context.Context,
-) (map[string]any, error) {
+) (*data.TitleMetricResponse, error) {
 	titles, err := s.TitleDAO.FindAll(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find titles, %w", err)
@@ -30,7 +30,7 @@ func (s *TitleMetricService) CountAllWordsAndSections(
 	go func() {
 		defer messagesWG.Done()
 		for message := range messages {
-			s.logInfo(message)
+			log.Info(fmt.Sprintf("Title Metrics Process: %v", message))
 		}
 	}()
 
@@ -50,8 +50,6 @@ func (s *TitleMetricService) CountAllWordsAndSections(
 			defer func() { <-throttle }()
 
 			name := title.Name
-
-			messages <- fmt.Sprintf("Processing: %v", name)
 
 			wordCount, err := s.TitleDAO.CountAllWords(ctx, name)
 			if err != nil {
@@ -80,7 +78,6 @@ func (s *TitleMetricService) CountAllWordsAndSections(
 			mu.Lock()
 			totalSectionCount += sectionCount
 			mu.Unlock()
-			messages <- fmt.Sprintf("Complete: %v", name)
 		}(title)
 	}
 
@@ -89,12 +86,8 @@ func (s *TitleMetricService) CountAllWordsAndSections(
 	close(messages)
 	messagesWG.Wait()
 
-	return map[string]any{
-		"wordCount":    totalWordCount,
-		"sectionCount": totalSectionCount,
+	return &data.TitleMetricResponse{
+		WordCount:    totalWordCount,
+		SectionCount: totalSectionCount,
 	}, nil
-}
-
-func (s *TitleMetricService) logInfo(message string) {
-	log.Info(fmt.Sprintf("Title Metrics: %v", message))
 }

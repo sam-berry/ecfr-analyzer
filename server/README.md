@@ -52,6 +52,20 @@ To only import specific titles:
 curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/import-titles?titles=16,17,18'
 ```
 
+## Computed Value APIs
+
+### Title Metrics
+
+```
+curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/compute/title-metrics'
+```
+
+### Title Metrics
+
+```
+curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/compute/agency-metrics'
+```
+
 ## Potential Enhancements
 
 * Precompute text values for title XML. Write a job to parse the entire CFR and save

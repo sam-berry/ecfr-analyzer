@@ -21,3 +21,11 @@ CREATE TABLE title
     createdTimestamp TIMESTAMP      NOT NULL
 );
 
+CREATE TABLE computed_value
+(
+    id               SERIAL PRIMARY KEY,
+    valueId          UUID UNIQUE NOT NULL,
+    key              TEXT UNIQUE NOT NULL,
+    data             JSONB       NOT NULL,
+    createdTimestamp TIMESTAMP   NOT NULL
+);

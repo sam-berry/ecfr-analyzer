@@ -205,5 +205,5 @@ func (s *TitleImportService) downloadTitleFile(
 }
 
 func (s *TitleImportService) logInfo(message string) {
-	log.Info(fmt.Sprintf("Title Import: %v", message))
+	log.Info(fmt.Sprintf("Title Import Process: %v", message))
 }
