@@ -66,8 +66,13 @@ curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'lo
 curl -X POST -H 'Authorization: Bearer E0E91B8C-60B6-439A-8C48-6D66D5A1BE55' 'localhost:8090/ecfr-service/compute/agency-metrics'
 ```
 
-## Potential Enhancements
+## Areas for Improvement
 
 * Precompute text values for title XML. Write a job to parse the entire CFR and save
   chapters/parts/sections/etc as structured data that can be easily queried. Do not need XLST for
-  this, can be done by iterating through the tree and following the DIV# guidelines. 
+  this, can be done by iterating through the tree and following the DIV# guidelines.
+* Create common Goroutine runner that encapsulates the channel and wait group processing, as it is
+  similar throughout the project
+* Subagencies metric import - this was an experiment that ended up working, but it could be handled cleaner
+  instead of passing the `onlySubAgencies` variable and forking the top-level logic
+* Import historical CFR records and compute metrics based on changes over time

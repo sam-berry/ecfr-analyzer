@@ -2,7 +2,7 @@
 
 import NumberCounter from "ecfr-analyzer/components/NumberCounter";
 import InfoPopover from "ecfr-analyzer/components/InfoPopover";
-import { ActionIcon, Button } from "@mantine/core";
+import { ActionIcon, Button, TextInput } from "@mantine/core";
 import {
   IconArrowDown,
   IconArrowsUpDown,
@@ -11,7 +11,8 @@ import {
 } from "@tabler/icons-react";
 import GovInfoBulkDataLink from "ecfr-analyzer/components/GovInfoBulkDataLink";
 import { AgencyMetrics } from "ecfr-analyzer/data/AgencyMetrics";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Fuse from "fuse.js";
 
 enum AgencyFilter {
   WORDS_DESC,
@@ -77,28 +78,61 @@ export default function AgencyGrid({
   agencyMetrics: AgencyMetrics[];
 }) {
   const [filter, setFilter] = useState<AgencyFilter>(defaultSort);
+  const [agenciesToDisplay, setAgenciesToDisplay] = useState<AgencyMetrics[]>(
+    [],
+  );
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const sortedAgencies = agencyMetrics.sort((a, b) => {
-    switch (filter) {
-      case AgencyFilter.WORDS_DESC:
-        return b.metrics.wordCount - a.metrics.wordCount;
-      case AgencyFilter.WORDS_ASC:
-        return a.metrics.wordCount - b.metrics.wordCount;
-      case AgencyFilter.SECTIONS_DESC:
-        return b.metrics.sectionCount - a.metrics.sectionCount;
-      case AgencyFilter.SECTIONS_ASC:
-        return a.metrics.sectionCount - b.metrics.sectionCount;
-      case AgencyFilter.ALPHA_ASC:
-        return a.agency.name.localeCompare(b.agency.name);
-      case AgencyFilter.ALPHA_DESC:
-        return b.agency.name.localeCompare(a.agency.name);
-      default:
-        return 0;
-    }
-  });
+  useEffect(() => {
+    const fuse = new Fuse(agencyMetrics, {
+      keys: [
+        "agency.name",
+        "agency.shortName",
+        "agency.displayName",
+        "agency.sortableName",
+        "agency.children.name",
+      ],
+      threshold: 0.2,
+    });
+
+    const agencies = (
+      searchQuery
+        ? fuse.search(searchQuery).map((it) => it.item)
+        : agencyMetrics
+    ).sort((a, b) => {
+      switch (filter) {
+        case AgencyFilter.WORDS_DESC:
+          return b.metrics.wordCount - a.metrics.wordCount;
+        case AgencyFilter.WORDS_ASC:
+          return a.metrics.wordCount - b.metrics.wordCount;
+        case AgencyFilter.SECTIONS_DESC:
+          return b.metrics.sectionCount - a.metrics.sectionCount;
+        case AgencyFilter.SECTIONS_ASC:
+          return a.metrics.sectionCount - b.metrics.sectionCount;
+        case AgencyFilter.ALPHA_ASC:
+          return a.agency.name.localeCompare(b.agency.name);
+        case AgencyFilter.ALPHA_DESC:
+          return b.agency.name.localeCompare(a.agency.name);
+        default:
+          return 0;
+      }
+    });
+
+    setAgenciesToDisplay(agencies);
+  }, [filter, agencyMetrics, searchQuery]);
 
   return (
     <div className="">
+      <div className="m-auto mb-6 w-full max-w-md justify-center">
+        <TextInput
+          placeholder="Search Agencies"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.currentTarget.value)}
+          classNames={{
+            input: "border-primary",
+          }}
+        />
+      </div>
       <div className="flex justify-center gap-4">
         <SortButton
           isAsc={filter === AgencyFilter.WORDS_ASC}
@@ -126,13 +160,13 @@ export default function AgencyGrid({
         />
       </div>
       <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-12">
-        {sortedAgencies.map((it, i) => (
+        {agenciesToDisplay.map((it, i) => (
           <div
             key={i}
             className="border-primary w-full max-w-[26rem] shrink-0 border p-4"
           >
             <div
-              className="mb-4 line-clamp-2 h-[3.5rem] text-xl font-semibold"
+              className="mb-2 line-clamp-2 h-[3.5rem] text-lg font-semibold"
               title={it.agency.name}
             >
               {it.agency.name}

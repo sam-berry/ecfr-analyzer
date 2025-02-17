@@ -80,8 +80,8 @@ export default async function Page() {
           ]}
         />
       </div>
-      <div className="m-auto mt-20 max-w-5xl px-4">
-        <div className="font-title decoration-primary-700 mb-10 w-full text-center text-2xl font-bold uppercase underline decoration-4 underline-offset-8 md:text-4xl">
+      <div className="m-auto mt-20 max-w-[95rem] px-4">
+        <div className="font-title decoration-primary-700 mb-8 w-full text-center text-2xl font-bold uppercase underline decoration-4 underline-offset-8 md:text-4xl">
           Federal Regulations by Agency
         </div>
         <AgencyGrid agencyMetrics={agencyMetrics} />

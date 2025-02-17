@@ -8,7 +8,6 @@ import {
 import { ReactNode } from "react";
 
 import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
 import "./globals.css";
 import { Instrument_Sans, Instrument_Serif } from "next/font/google";
 
@@ -27,8 +26,8 @@ const titleFont = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Code of Federal Regulations - Metrics",
-  description: "Enhanced analysis of Federal Regulations data",
+  title: "Code of Federal Regulations Metrics",
+  description: "Insights into Federal Regulations data",
 };
 
 const theme = createTheme({
@@ -75,7 +74,7 @@ export default function RootLayout({
       <head>
         <link
           rel="icon"
-          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇺🇸</text></svg>"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>"
         />
         <ColorSchemeScript />
       </head>
