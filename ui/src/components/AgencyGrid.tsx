@@ -3,16 +3,12 @@
 import NumberCounter from "ecfr-analyzer/components/NumberCounter";
 import InfoPopover from "ecfr-analyzer/components/InfoPopover";
 import { ActionIcon, Button, TextInput } from "@mantine/core";
-import {
-  IconArrowDown,
-  IconArrowsUpDown,
-  IconArrowUp,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconInfoCircle } from "@tabler/icons-react";
 import GovInfoBulkDataLink from "ecfr-analyzer/components/GovInfoBulkDataLink";
 import { AgencyMetrics } from "ecfr-analyzer/data/AgencyMetrics";
 import { useEffect, useState } from "react";
 import Fuse from "fuse.js";
+import SortButton from "ecfr-analyzer/components/SortButton";
 
 enum AgencyFilter {
   WORDS_DESC,
@@ -25,63 +21,17 @@ enum AgencyFilter {
 
 const defaultSort = AgencyFilter.WORDS_DESC;
 
-function SortButton({
-  isAsc,
-  isDesc,
-  label,
-  sortAsc,
-  sortDesc,
-  clear,
-}: {
-  isAsc: boolean;
-  isDesc: boolean;
-  label: string;
-  sortAsc: () => void;
-  sortDesc: () => void;
-  clear: () => void;
-}) {
-  return (
-    <Button
-      variant="outline"
-      size="compact-sm"
-      color="black"
-      leftSection={
-        isAsc ? (
-          <IconArrowUp size={13} stroke={2.5} />
-        ) : isDesc ? (
-          <IconArrowDown size={13} stroke={2.5} />
-        ) : (
-          <IconArrowsUpDown size={13} stroke={2.5} />
-        )
-      }
-      classNames={{
-        section: "mr-1",
-      }}
-      onClick={() => {
-        if (isDesc) {
-          sortAsc();
-        } else if (isAsc) {
-          clear();
-        } else {
-          sortDesc();
-        }
-      }}
-    >
-      {label}
-    </Button>
-  );
-}
-
 export default function AgencyGrid({
   agencyMetrics,
 }: {
   agencyMetrics: AgencyMetrics[];
 }) {
+  const pageSize = 10;
+
   const [filter, setFilter] = useState<AgencyFilter>(defaultSort);
-  const [agenciesToDisplay, setAgenciesToDisplay] = useState<AgencyMetrics[]>(
-    [],
-  );
+  const [filteredAgencies, setFilteredAgencies] = useState<AgencyMetrics[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(pageSize);
 
   useEffect(() => {
     const fuse = new Fuse(agencyMetrics, {
@@ -118,8 +68,14 @@ export default function AgencyGrid({
       }
     });
 
-    setAgenciesToDisplay(agencies);
+    setFilteredAgencies([...agencies]);
   }, [filter, agencyMetrics, searchQuery]);
+
+  const loadMoreAgencies = () => {
+    setVisibleCount((prev) => prev + pageSize);
+  };
+
+  const displayedAgencies = filteredAgencies.slice(0, visibleCount);
 
   return (
     <div className="">
@@ -160,10 +116,10 @@ export default function AgencyGrid({
         />
       </div>
       <div className="mt-8 flex w-full flex-wrap items-center justify-center gap-12">
-        {agenciesToDisplay.map((it, i) => (
+        {displayedAgencies.map((it, i) => (
           <div
             key={i}
-            className="border-primary w-full max-w-[26rem] shrink-0 border p-4"
+            className="border-primary bg-light w-full max-w-[26rem] shrink-0 border p-4"
           >
             <div
               className="mb-2 line-clamp-2 h-[3.5rem] text-lg font-semibold"
@@ -233,6 +189,13 @@ export default function AgencyGrid({
           </div>
         ))}
       </div>
+      {agencyMetrics.length && visibleCount <= agencyMetrics.length && (
+        <div className="mt-10 flex justify-center">
+          <Button variant="outline" onClick={loadMoreAgencies}>
+            Load more agencies
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

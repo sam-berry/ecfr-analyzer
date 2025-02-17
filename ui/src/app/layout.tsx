@@ -58,6 +58,7 @@ const theme = createTheme({
     ],
   },
   primaryColor: "primary",
+  primaryShade: 9,
 });
 
 export default function RootLayout({
